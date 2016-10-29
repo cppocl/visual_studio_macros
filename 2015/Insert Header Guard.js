@@ -83,5 +83,6 @@ var guard = guard_prepend + PathToGuard(path, guard_start_word, false);
 // Insert header guard
 InsertLine("#ifndef " + guard);
 InsertLine("#define " + guard);
+InsertLine("#endif // " + guard);
 
 dte.UndoContext.Close();
