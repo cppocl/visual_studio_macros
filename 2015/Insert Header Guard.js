@@ -81,7 +81,7 @@ var path = dte.ActiveDocument.FullName;
 var guard = guard_prepend + PathToGuard(path, guard_start_word, false);
 
 // Insert header guard
-InsertLine("#ifndef " + guard, 1);
-InsertLine("#define " + guard, 1);
+InsertLine("#ifndef " + guard);
+InsertLine("#define " + guard);
 
 dte.UndoContext.Close();
