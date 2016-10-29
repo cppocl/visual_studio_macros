@@ -77,7 +77,7 @@ dte.UndoContext.Open("Insert Header Guard");
 // Convert path to header guard.
 // Looks for first word split by back slash,
 // then converts to series of words separated by underscore.
-var path = dte.ActiveDocument.FullName;
+var path = doc.FullName;
 var guard = guard_prepend + PathToGuard(path, guard_start_word, false);
 
 // Insert header guard
