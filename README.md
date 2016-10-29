@@ -1,4 +1,4 @@
-# visual_studio_macros
+# Visual Studio Macros for C++
 Macros for various Visual Studio versions to aid in productivity.
 
 See the Microsoft Macros Extension project for details about using the macros.
