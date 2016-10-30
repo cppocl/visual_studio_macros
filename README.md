@@ -2,6 +2,7 @@
 Macros for various Visual Studio versions to aid in productivity.
 
 See the Microsoft Macros Extension project for details about using the macros.
+These macros are written in ECMAScript (i.e. JavaScript), which is the language used by the Macro explorer.
 
 Some useful links here:
 
