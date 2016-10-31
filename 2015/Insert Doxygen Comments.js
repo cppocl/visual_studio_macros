@@ -110,7 +110,10 @@ function ExtractLineOfCode(code_line, stop_at, in_comment)
                 ret_code = 0;
                 break; // End of function.
             }
-            if (ch == ',') // ignore white space after comma within arguments.
+
+            // ignore white space after comma within arguments or
+            // when beginning interpreting arguments.
+            if (ch == ',' || ch == "(")
                 skip_white_space = true;
             else
                 skip_white_space = false;
@@ -178,10 +181,6 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
     var doxygen = [];
     var word_str = "";
 
-    // keep track of previous word, so we can detect return type
-    // when there is a space between the function name and open bracket.
-    var prev_word_str = "";
-
     // Detected last part of return type before function name.
     var return_str = "";
 
@@ -221,7 +220,7 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
             if (ch == "(")
             {
                 if (return_str != "void")
-                    return_doxygen_comment = doxygen_comment + "[" + return_str + "] return ";
+                    return_doxygen_comment = doxygen_comment + "return ";
                 word_str = "";
                 is_args = true;
                 searched_args = true;
@@ -230,6 +229,11 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
             {
                 is_args = false;
                 after_args = true;
+                if (word_str.length > 0)
+                {
+                    added_param = true;
+                    doxygen.push(doxygen_comment + "param " + word_str);
+                }
             }
             else if (ch == "<")
             {
@@ -256,8 +260,11 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
         }
         else
         {
+            // Although template code is detected, Doxygen comments do not
+            // currently add any details about template types.
             if (word_str == "template")
                 is_template = true;
+
             if (!searched_args) // record last word before function name.
                 return_str = word_str;
             word_str = "";
