@@ -16,6 +16,12 @@ limitations under the License.
 
 var doc = dte.ActiveDocument;
 
+function Insert(str)
+{
+    doc.Selection.StartOfLine();
+    doc.Selection.Insert(str, 1);
+}
+
 function InsertLine(str)
 {
     doc.Selection.StartOfLine();
@@ -25,8 +31,13 @@ function InsertLine(str)
 
 function InsertArray(str_array)
 {
-    for (i = 0; i < str_array.length; i++)
-        InsertLine(str_array[i]);
+    if (str_array.length > 0)
+    {
+        var count = str_array.length - 1;
+        for (i = 0; i < count; i++)
+            InsertLine(str_array[i]);
+        Insert(str_array[count]);
+    }
 }
 
 // Find padding before words commence.
@@ -178,18 +189,27 @@ function ExtractLinesOfCode(stop_at)
 // Comment type would be \ or @, e.g. \param or @param
 function CodeToDoxygen(code_line, comment_start, comment_style, padding)
 {
+    // This function will return an array of strings to be used as comments
+    // before the actual C++ function.
     var doxygen = [];
+
+    // word_str is used to detect return type and argument variable names.
     var word_str = "";
+
+    // If there is space between the function name and the open bracket,
+    // Need to compare the previous word against "void".
+    var prev_word_str = "";
 
     // Detected last part of return type before function name.
     var return_str = "";
 
+    // When the function has a return type, the Doxygen line is generated.
     var return_doxygen_comment = "";
-    var searched_args = false;
-    var is_args = false;
-    var after_args = false;  // Flag past args to prevent any more params being added.
+
+    var is_args     = false; // Inside open and close bracket, so parsing arguments.
+    var after_args  = false; // Flag past args to prevent any more params being added.
     var is_template = false; // Set to true when "template" keyword detected.
-    var added_param = false;
+    var added_arg   = false; // If a argument is added we need to add a blank comment line.
 
     var doxygen_comment       = ""; // Doxygen padding and style to appear before each line.
     var doxygen_comment_blank = ""; // When a separator line is required, use the blank.
@@ -209,7 +229,6 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
     }
 
     doxygen.push(doxygen_comment + "brief ");
-    doxygen.push(doxygen_comment_blank);
 
     for (i = 0; i < code_line.length; i++)
     {
@@ -219,11 +238,20 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
         {
             if (ch == "(")
             {
+                // return_str will point to the function name if there is a space,
+                // so needs to be set to the previous word, as this will be the type.
+                if (prev_char == " " || prev_char == "\t")
+                    return_str = prev_word_str;
+
+                // Only wan't return Doxygen comment when the return is not a void type.
                 if (return_str != "void")
                     return_doxygen_comment = doxygen_comment + "return ";
+
+                // Don't care about previous word after detecting return type.
+                prev_word_str = "";
+
                 word_str = "";
                 is_args = true;
-                searched_args = true;
             }
             else if (ch == ")")
             {
@@ -231,7 +259,11 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
                 after_args = true;
                 if (word_str.length > 0)
                 {
-                    added_param = true;
+                    if (!added_arg)
+                    {
+                        doxygen.push(doxygen_comment_blank);
+                        added_arg = true;
+                    }
                     doxygen.push(doxygen_comment + "param " + word_str);
                 }
             }
@@ -250,31 +282,54 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
             {
                 if (is_args)
                 {
-                    added_param = true;
+                    if (!added_arg)
+                    {
+                        doxygen.push(doxygen_comment_blank);
+                        added_arg = true;
+                    }
                     doxygen.push(doxygen_comment + "param " + word_str);
                 }
+
+                // Only care about previous word for detecting return type.
+                // Once arguments are being parsed, return type is already handled.
+                if (!is_args)
+                    prev_word_str = word_str;
+
                 word_str = "";
             }
             else
                 word_str += ch;
         }
-        else
+        else // Handling white space.
         {
             // Although template code is detected, Doxygen comments do not
             // currently add any details about template types.
             if (word_str == "template")
                 is_template = true;
 
-            if (!searched_args) // record last word before function name.
-                return_str = word_str;
-            word_str = "";
+            // Only clear out the word for the first space found,
+            // so we don't clear the previous word, as this is needed
+            // for identifying the return type.
+            if (word_str.length > 0)
+            {
+                // Only care about previous word for detecting return type.
+                // Once arguments are being parsed, return type is already handled.
+                if (!is_args)
+                {
+                    // If the return string is set, then there is a previous word to store
+                    // for being used later, when a space is found before the open bracket.
+                    if (return_str.length > 0)
+                        prev_word_str = return_str;
+                    return_str = word_str;
+                }
+                word_str = "";
+            }
         }
     }
 
     if (return_doxygen_comment.length > 0)
     {
-        if (added_param)
-            doxygen.push(doxygen_comment_blank);
+        doxygen.push(doxygen_comment_blank);
         doxygen.push(return_doxygen_comment);
     }
 
