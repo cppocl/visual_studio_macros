@@ -62,7 +62,7 @@ function GetPadding(code_line)
 //   0 means stop_at is found.
 //   1 means stop_at not found.
 //   2 means stop_at not found and within comment.
-function ExtractLineOfCode(code_line, stop_at, in_comment)
+function ExtractLineOfCode(code_line, stop_at, alt_stop_at, in_comment)
 {
     var ret_code = 1;
     var possible_comment = false; // Can only be true for one character.
@@ -116,7 +116,7 @@ function ExtractLineOfCode(code_line, stop_at, in_comment)
         else
         {
             extracted_line += ch;
-            if (ch == stop_at)
+            if (ch == stop_at || ch == alt_stop_at)
             {
                 ret_code = 0;
                 break; // End of function.
@@ -156,7 +156,7 @@ function ExtractLinesOfCode(stop_at)
         curr_line = TextSelection.Text;
 
         // Get the code line without any comments.
-        var values = ExtractLineOfCode(curr_line, ";", in_comment);
+        var values = ExtractLineOfCode(curr_line, ";", "{", in_comment);
         ret_code = values.ret_code;
         whole_function += values.extracted_line;
 
