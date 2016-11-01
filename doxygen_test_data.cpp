@@ -72,6 +72,9 @@ void func ( int abcd/**/);
 int func ( int a_b/**/);
 
 
+extern "C" int func ( int a_b/**/);
+
+
 void func(/**/int a_b_c);
 
 
@@ -111,6 +114,10 @@ int func(/* // */);
 int func(/* ; */);
 
 
+int func(int a, int b,
+         int c, long d);
+
+
 int func(int a, int b/* ; */,
          int c,
          long d);
@@ -119,6 +126,37 @@ int func(int a, int b/* ; */,
     int func(int a, int b/* ; */,
              int c,
              long d);
+
+
+void func() {}
+
+
+void func()
+{
+}
+
+
+int func()
+{
+}
+
+
+int func(int a)
+{
+}
+
+
+int func(int a, int b,
+         int c, long d)
+{
+}
+
+
+int func(int a, int b,
+         int c,
+         long d)
+{
+}
 
 
 #endif

@@ -339,26 +339,36 @@ function CodeToDoxygen(code_line, comment_start, comment_style, padding)
     return doxygen;
 }
 
-// Prepare undo.
-if (dte.UndoContext.IsOpen)
+function GenerateDoxygen()
+{
+    // Prepare undo.
+    if (dte.UndoContext.IsOpen)
+        dte.UndoContext.Close();
+    dte.UndoContext.Open("Insert Header Guard");
+
+    // Setup start for each Doxygen comment line.
+    var TextSelection = doc.Selection;
+    TextSelection.StartOfLine();
+    TextSelection.EndOfLine(true);
+    var padding = GetPadding(TextSelection.Text);
+    var comment_start = "/**"; // Can also be //
+    var comment_style = "@";   // Can also be \
+
+    // Extract all the code into a single line up to the semi-colon.
+    var whole_function = ExtractLinesOfCode(";");
+
+    // Convert the code line to Doxygen comments.
+    var doxygen = CodeToDoxygen(whole_function,
+                                comment_start,
+                                comment_style,
+                                padding);
+
+    // Place the Doxygen comments above the function.
+    InsertArray(doxygen);
+
     dte.UndoContext.Close();
-dte.UndoContext.Open("Insert Header Guard");
+}
 
-// Setup start for each Doxygen comment line.
-var TextSelection = doc.Selection;
-TextSelection.StartOfLine();
-TextSelection.EndOfLine(true);
-var padding = GetPadding(TextSelection.Text);
-var comment_start = "/**"; // Can also be //
-var comment_style = "@";   // Can also be \
-
-// Extract all the code into a single line up to the semi-colon.
-var whole_function = ExtractLinesOfCode(";");
-
-// Convert the code line to Doxygen comments.
-var doxygen = CodeToDoxygen(whole_function, comment_start, comment_style, padding);
-
-// Place the Doxygen comments above the function.
-InsertArray(doxygen);
-
-dte.UndoContext.Close();
+// Generate the Doxygen comments from the current cursor position
+// within the current document.
+GenerateDoxygen();
