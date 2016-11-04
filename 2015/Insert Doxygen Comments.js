@@ -70,7 +70,6 @@ function ExtractLineOfCode(code_line, stop_at, alt_stop_at, in_comment)
     var prev_char = "";
     var extracted_line = "";
     var skip_white_space = true;
-    var padding = "";
 
     for (i = 0; i < code_line.length; i++)
     {
@@ -136,7 +135,7 @@ function ExtractLineOfCode(code_line, stop_at, alt_stop_at, in_comment)
     else if (in_comment)
         ret_code = 2;
 
-    return { ret_code: ret_code, extracted_line: extracted_line, padding: padding };
+    return { ret_code: ret_code, extracted_line: extracted_line };
 }
 
 function ExtractLinesOfCode(stop_at)
